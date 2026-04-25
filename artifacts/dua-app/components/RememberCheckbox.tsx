@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 16,
     borderRadius: 18,
-    borderWidth: 1,
+    borderWidth: 2,
     gap: 14,
   },
   box: {
