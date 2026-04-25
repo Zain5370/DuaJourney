@@ -28,30 +28,45 @@ export function RememberCheckbox({ checked, onToggle, label }: Props) {
   return (
     <Pressable
       onPress={handlePress}
-      style={({ pressed }) => [
-        styles.wrapper,
-        {
-          backgroundColor: "#4E7F5A",
-          borderColor: "#4E7F5A",
-          opacity: pressed ? 0.9 : 1,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
-        },
-      ]}
-    >
-      <View
-        style={[
-          styles.box,
+      style={({ pressed, hovered }: any) => {
+        const active = checked || hovered || pressed;
+        return [
+          styles.wrapper,
           {
-            backgroundColor: checked ? "#ffffff" : "transparent",
-            borderColor: "#ffffff",
+            backgroundColor: active ? "#4E7F5A" : "transparent",
+            borderColor: active ? "#4E7F5A" : colors.border,
+            opacity: pressed ? 0.9 : 1,
+            transform: [{ scale: pressed ? 0.98 : 1 }],
           },
-        ]}
-      >
-        {checked && <Feather name="check" size={16} color="#386845" />}
-      </View>
-      <Text style={[styles.label, { color: "#ffffff" }]}>
-        {label ?? "I have memorized this Dua"}
-      </Text>
+        ];
+      }}
+    >
+      {({ pressed, hovered }: any) => {
+        const active = checked || hovered || pressed;
+        return (
+          <>
+            <View
+              style={[
+                styles.box,
+                {
+                  backgroundColor: checked ? "#ffffff" : "transparent",
+                  borderColor: active ? "#ffffff" : colors.navySoft,
+                },
+              ]}
+            >
+              {checked && <Feather name="check" size={16} color="#4E7F5A" />}
+            </View>
+            <Text
+              style={[
+                styles.label,
+                { color: active ? "#ffffff" : colors.navy },
+              ]}
+            >
+              {label ?? "I have memorized this Dua"}
+            </Text>
+          </>
+        );
+      }}
     </Pressable>
   );
 }
