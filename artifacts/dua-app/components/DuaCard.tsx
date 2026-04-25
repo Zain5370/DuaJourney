@@ -5,6 +5,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { useArabicText } from "@/hooks/useArabicText";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import type { Dua } from "@/constants/duas";
 
@@ -92,8 +93,8 @@ function FavoriteButton({
       style={({ pressed }) => [
         styles.favFloating,
         {
-          backgroundColor: active ? colors.pink : colors.card,
-          borderColor: colors.border,
+          backgroundColor: active ? "#E11D48" : colors.card,
+          borderColor: active ? "#E11D48" : colors.border,
           opacity: pressed ? 0.8 : 1,
         },
       ]}
@@ -101,7 +102,7 @@ function FavoriteButton({
       <Feather
         name="heart"
         size={14}
-        color={active ? colors.navy : colors.mutedForeground}
+        color={active ? "#FFFFFF" : colors.mutedForeground}
       />
     </Pressable>
   );
@@ -117,6 +118,7 @@ function FeatureContent({
   locked?: boolean;
 }) {
   const colors = useColors();
+  const arabic = useArabicText();
   return (
     <>
       <View style={styles.featureHeader}>
@@ -146,7 +148,11 @@ function FeatureContent({
       </Text>
 
       <Text
-        style={[styles.arabic, { color: colors.navy }]}
+        style={[
+          styles.arabic,
+          arabic.style(28, "medium"),
+          { color: colors.navy },
+        ]}
         numberOfLines={2}
         adjustsFontSizeToFit
       >
@@ -188,6 +194,7 @@ function CompactContent({
   onToggleFavorite: () => void;
 }) {
   const colors = useColors();
+  const arabic = useArabicText();
   return (
     <>
       <View style={styles.compactRow}>
@@ -199,7 +206,11 @@ function CompactContent({
             {dua.title}
           </Text>
           <Text
-            style={[styles.arabicSmall, { color: colors.navy }]}
+            style={[
+              styles.arabicSmall,
+              arabic.style(18, "regular"),
+              { color: colors.navy },
+            ]}
             numberOfLines={1}
           >
             {dua.arabic}
@@ -224,8 +235,8 @@ function CompactContent({
             style={({ pressed }) => [
               styles.favInline,
               {
-                backgroundColor: isFavorite ? colors.pink : "transparent",
-                borderColor: isFavorite ? colors.pink : colors.border,
+                backgroundColor: isFavorite ? "#E11D48" : "transparent",
+                borderColor: isFavorite ? "#E11D48" : colors.border,
                 opacity: pressed ? 0.7 : 1,
               },
             ]}
@@ -233,7 +244,7 @@ function CompactContent({
             <Feather
               name="heart"
               size={13}
-              color={isFavorite ? colors.navy : colors.mutedForeground}
+              color={isFavorite ? "#FFFFFF" : colors.mutedForeground}
             />
           </Pressable>
 

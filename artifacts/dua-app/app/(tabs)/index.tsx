@@ -21,6 +21,7 @@ import { DUAS, type Difficulty } from "@/constants/duas";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useArabicText } from "@/hooks/useArabicText";
 import { useColors } from "@/hooks/useColors";
 
 function pickDuaOfDay(): (typeof DUAS)[number] {
@@ -49,6 +50,7 @@ export default function HomeScreen() {
     streak,
   } = useProgress();
   const { favorites } = useFavorites();
+  const arabic = useArabicText();
 
   const [query, setQuery] = useState("");
 
@@ -249,14 +251,14 @@ export default function HomeScreen() {
               ]}
             >
               <LinearGradient
-                colors={[colors.navy, colors.navySoft]}
+                colors={["#1B2A4E", "#3B4A6F"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.dotdHero}
               >
                 <View style={styles.dotdHeader}>
                   <View style={styles.dotdBadge}>
-                    <Feather name="sun" size={12} color={colors.navy} />
+                    <Feather name="sun" size={12} color="#1B2A4E" />
                     <Text style={styles.dotdBadgeText}>
                       {t("dua_of_the_day")}
                     </Text>
@@ -266,7 +268,10 @@ export default function HomeScreen() {
                 <Text style={styles.dotdTitle}>{duaOfDay.title}</Text>
                 <Text
                   numberOfLines={2}
-                  style={styles.dotdArabic}
+                  style={[
+                    styles.dotdArabic,
+                    arabic.style(22, "medium"),
+                  ]}
                 >
                   {duaOfDay.arabic}
                 </Text>

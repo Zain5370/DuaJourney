@@ -15,11 +15,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RememberCheckbox } from "@/components/RememberCheckbox";
 import { DUAS } from "@/constants/duas";
 import { useColors } from "@/hooks/useColors";
+import { useArabicText } from "@/hooks/useArabicText";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useProgress } from "@/contexts/ProgressContext";
 
 export default function DuaDetailScreen() {
   const colors = useColors();
+  const arabic = useArabicText();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
@@ -106,9 +108,9 @@ export default function DuaDetailScreen() {
             styles.iconBtn,
             {
               backgroundColor: isFavorite(dua.id)
-                ? colors.pink
+                ? "#E11D48"
                 : colors.card,
-              borderColor: isFavorite(dua.id) ? colors.pink : colors.border,
+              borderColor: isFavorite(dua.id) ? "#E11D48" : colors.border,
               opacity: pressed ? 0.85 : 1,
             },
           ]}
@@ -116,7 +118,7 @@ export default function DuaDetailScreen() {
           <Feather
             name="heart"
             size={18}
-            color={colors.navy}
+            color={isFavorite(dua.id) ? "#FFFFFF" : colors.navy}
           />
         </Pressable>
       </View>
@@ -146,7 +148,11 @@ export default function DuaDetailScreen() {
           style={[styles.arabicCard, { borderColor: colors.border }]}
         >
           <Text
-            style={[styles.arabic, { color: colors.navy }]}
+            style={[
+              styles.arabic,
+              arabic.style(30, "medium"),
+              { color: colors.navy },
+            ]}
             adjustsFontSizeToFit
           >
             {dua.arabic}

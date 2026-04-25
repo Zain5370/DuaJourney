@@ -65,12 +65,39 @@ export const FONT_STYLE_FAMILIES: Record<
   },
 };
 
+// Arabic font families per FontStyle setting (font style only affects Arabic text).
+export const ARABIC_FONT_FAMILIES: Record<
+  FontStyle,
+  { regular: string; medium: string; bold: string; lineHeightFactor: number }
+> = {
+  poppins: {
+    regular: "NotoNaskhArabic_400Regular",
+    medium: "NotoNaskhArabic_500Medium",
+    bold: "NotoNaskhArabic_700Bold",
+    lineHeightFactor: 1.6,
+  },
+  system: {
+    regular: "System",
+    medium: "System",
+    bold: "System",
+    lineHeightFactor: 1.55,
+  },
+  serif: {
+    regular: "NotoNastaliqUrdu_400Regular",
+    medium: "NotoNastaliqUrdu_400Regular",
+    bold: "NotoNastaliqUrdu_700Bold",
+    lineHeightFactor: 2.0,
+  },
+};
+
 interface SettingsContextValue extends PersistedSettings {
   ready: boolean;
   resolvedMode: "light" | "dark";
   palette: ReturnType<typeof getPalette>;
   fontScale: number;
   fontFamilies: (typeof FONT_STYLE_FAMILIES)[FontStyle];
+  arabicFontFamilies: (typeof ARABIC_FONT_FAMILIES)[FontStyle];
+  arabicFontScale: number;
   t: (key: string) => string;
   setThemeMode: (m: ThemeMode) => void;
   setAccent: (a: AccentName) => void;
@@ -126,6 +153,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const palette = getPalette(resolvedMode, settings.accent);
     const fontScale = FONT_SIZE_SCALE[settings.fontSize];
     const fontFamilies = FONT_STYLE_FAMILIES[settings.fontStyle];
+    const arabicFontFamilies = ARABIC_FONT_FAMILIES[settings.fontStyle];
+    const arabicFontScale = FONT_SIZE_SCALE[settings.fontSize];
     const dict = TRANSLATIONS[settings.language] ?? TRANSLATIONS.en;
 
     const t = (key: string) =>
@@ -138,6 +167,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       palette,
       fontScale,
       fontFamilies,
+      arabicFontFamilies,
+      arabicFontScale,
       t,
       setThemeMode: (m) => persist({ ...settings, themeMode: m }),
       setAccent: (a) => persist({ ...settings, accent: a }),

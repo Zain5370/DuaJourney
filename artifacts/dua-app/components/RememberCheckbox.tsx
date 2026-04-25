@@ -33,9 +33,9 @@ export function RememberCheckbox({ checked, onToggle, label }: Props) {
         return [
           styles.wrapper,
           {
-            backgroundColor: active ? "#4E7F5A" : "transparent",
-            borderColor: active ? "#4E7F5A" : colors.border,
-            opacity: pressed ? 0.9 : 1,
+            backgroundColor: active ? "#7FB28A" : "transparent",
+            borderColor: "#000814",
+            opacity: pressed ? 0.95 : 1,
             transform: [{ scale: pressed ? 0.98 : 1 }],
           },
         ];
@@ -50,11 +50,11 @@ export function RememberCheckbox({ checked, onToggle, label }: Props) {
                 styles.box,
                 {
                   backgroundColor: checked ? "#ffffff" : "transparent",
-                  borderColor: active ? "#ffffff" : colors.navySoft,
+                  borderColor: active ? "#ffffff" : "#000814",
                 },
               ]}
             >
-              {checked && <Feather name="check" size={16} color="#4E7F5A" />}
+              {checked && <Feather name="check" size={16} color="#7FB28A" />}
             </View>
             <Text
               style={[
