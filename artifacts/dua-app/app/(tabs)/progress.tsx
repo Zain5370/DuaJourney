@@ -13,15 +13,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DuaCard } from "@/components/DuaCard";
 import { ProgressRing } from "@/components/ProgressRing";
+import { MenuButton } from "@/components/Sidebar";
 import { CATEGORIES, DUAS } from "@/constants/duas";
 import { useColors } from "@/hooks/useColors";
 import { useProgress } from "@/contexts/ProgressContext";
+import { useSettings } from "@/contexts/SettingsContext";
 
 export default function ProgressScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
-  const { learnedIds, resetProgress } = useProgress();
+  const { learnedIds, resetProgress, streak } = useProgress();
+  const { t } = useSettings();
 
   const total = DUAS.length;
   const learned = DUAS.filter((d) => learnedIds.has(d.id));
@@ -45,11 +48,63 @@ export default function ProgressScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>
-            Your Journey
-          </Text>
-          <Text style={[styles.title, { color: colors.navy }]}>Progress</Text>
+        <View style={styles.headerRow}>
+          <MenuButton />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>
+              Your Journey
+            </Text>
+            <Text style={[styles.title, { color: colors.navy }]}>
+              {t("progress_tab")}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.streakRow}>
+          <View
+            style={[
+              styles.streakCard,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <View
+              style={[styles.streakIcon, { backgroundColor: colors.pinkSoft }]}
+            >
+              <Feather name="zap" size={16} color={colors.navy} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.streakValue, { color: colors.navy }]}>
+                {streak.current}
+              </Text>
+              <Text
+                style={[styles.streakLabel, { color: colors.mutedForeground }]}
+              >
+                {t("current_streak")}
+              </Text>
+            </View>
+          </View>
+          <View
+            style={[
+              styles.streakCard,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <View
+              style={[styles.streakIcon, { backgroundColor: colors.pinkSoft }]}
+            >
+              <Feather name="award" size={16} color={colors.navy} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.streakValue, { color: colors.navy }]}>
+                {streak.best}
+              </Text>
+              <Text
+                style={[styles.streakLabel, { color: colors.mutedForeground }]}
+              >
+                {t("best_streak")}
+              </Text>
+            </View>
+          </View>
         </View>
 
         <LinearGradient
@@ -216,6 +271,39 @@ const styles = StyleSheet.create({
     gap: 22,
   },
   header: { gap: 4 },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  streakRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  streakCard: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  streakIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  streakValue: {
+    fontFamily: "Poppins_700Bold",
+    fontSize: 22,
+  },
+  streakLabel: {
+    fontFamily: "Poppins_400Regular",
+    fontSize: 11,
+  },
   eyebrow: {
     fontFamily: "Poppins_500Medium",
     fontSize: 12,

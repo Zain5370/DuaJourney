@@ -5,6 +5,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { useFavorites } from "@/contexts/FavoritesContext";
 import type { Dua } from "@/constants/duas";
 
 interface Props {
@@ -17,6 +18,8 @@ interface Props {
 export function DuaCard({ dua, learned, locked, variant = "compact" }: Props) {
   const colors = useColors();
   const router = useRouter();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const fav = isFavorite(dua.id);
 
   const isFeature = variant === "feature";
 
@@ -48,6 +51,10 @@ export function DuaCard({ dua, learned, locked, variant = "compact" }: Props) {
           ]}
         >
           <FeatureContent dua={dua} learned={learned} locked={locked} />
+          <FavoriteButton
+            active={fav}
+            onPress={() => toggleFavorite(dua.id)}
+          />
         </LinearGradient>
       ) : (
         <View
@@ -57,9 +64,45 @@ export function DuaCard({ dua, learned, locked, variant = "compact" }: Props) {
             { backgroundColor: colors.card, borderColor: colors.border },
           ]}
         >
-          <CompactContent dua={dua} learned={learned} locked={locked} />
+          <CompactContent
+            dua={dua}
+            learned={learned}
+            locked={locked}
+            isFavorite={fav}
+            onToggleFavorite={() => toggleFavorite(dua.id)}
+          />
         </View>
       )}
+    </Pressable>
+  );
+}
+
+function FavoriteButton({
+  active,
+  onPress,
+}: {
+  active: boolean;
+  onPress: () => void;
+}) {
+  const colors = useColors();
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={10}
+      style={({ pressed }) => [
+        styles.favFloating,
+        {
+          backgroundColor: active ? colors.pink : colors.card,
+          borderColor: colors.border,
+          opacity: pressed ? 0.8 : 1,
+        },
+      ]}
+    >
+      <Feather
+        name="heart"
+        size={14}
+        color={active ? colors.navy : colors.mutedForeground}
+      />
     </Pressable>
   );
 }
@@ -135,10 +178,14 @@ function CompactContent({
   dua,
   learned,
   locked,
+  isFavorite,
+  onToggleFavorite,
 }: {
   dua: Dua;
   learned?: boolean;
   locked?: boolean;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }) {
   const colors = useColors();
   return (
@@ -170,21 +217,48 @@ function CompactContent({
           </View>
         </View>
 
-        {locked ? (
-          <View style={[styles.statusDot, { backgroundColor: colors.muted }]}>
-            <Feather name="lock" size={12} color={colors.mutedForeground} />
-          </View>
-        ) : learned ? (
-          <View style={[styles.statusDot, { backgroundColor: colors.success }]}>
-            <Feather name="check" size={12} color={colors.successForeground} />
-          </View>
-        ) : (
-          <Feather
-            name="chevron-right"
-            size={20}
-            color={colors.mutedForeground}
-          />
-        )}
+        <View style={styles.compactRight}>
+          <Pressable
+            onPress={onToggleFavorite}
+            hitSlop={10}
+            style={({ pressed }) => [
+              styles.favInline,
+              {
+                backgroundColor: isFavorite ? colors.pink : "transparent",
+                borderColor: isFavorite ? colors.pink : colors.border,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
+          >
+            <Feather
+              name="heart"
+              size={13}
+              color={isFavorite ? colors.navy : colors.mutedForeground}
+            />
+          </Pressable>
+
+          {locked ? (
+            <View style={[styles.statusDot, { backgroundColor: colors.muted }]}>
+              <Feather name="lock" size={12} color={colors.mutedForeground} />
+            </View>
+          ) : learned ? (
+            <View
+              style={[styles.statusDot, { backgroundColor: colors.success }]}
+            >
+              <Feather
+                name="check"
+                size={12}
+                color={colors.successForeground}
+              />
+            </View>
+          ) : (
+            <Feather
+              name="chevron-right"
+              size={20}
+              color={colors.mutedForeground}
+            />
+          )}
+        </View>
       </View>
     </>
   );
@@ -290,6 +364,30 @@ const styles = StyleSheet.create({
   compactRow: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  compactRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  favInline: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  favFloating: {
+    position: "absolute",
+    top: 14,
+    right: 60,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   compactTitle: {
     fontFamily: "Poppins_600SemiBold",

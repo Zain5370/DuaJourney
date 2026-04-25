@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DuaCard } from "@/components/DuaCard";
 import { FilterPills } from "@/components/FilterPills";
+import { MenuButton } from "@/components/Sidebar";
 import {
   CATEGORIES,
   DIFFICULTIES,
@@ -60,13 +61,16 @@ export default function LibraryScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>
-            Dua Library
-          </Text>
-          <Text style={[styles.title, { color: colors.navy }]}>
-            Browse all Duas
-          </Text>
+        <View style={styles.headerRow}>
+          <MenuButton />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>
+              Dua Library
+            </Text>
+            <Text style={[styles.title, { color: colors.navy }]}>
+              Browse all Duas
+            </Text>
+          </View>
         </View>
 
         <View
@@ -156,6 +160,11 @@ const styles = StyleSheet.create({
     gap: 18,
   },
   header: { gap: 4 },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
   eyebrow: {
     fontFamily: "Poppins_500Medium",
     fontSize: 12,

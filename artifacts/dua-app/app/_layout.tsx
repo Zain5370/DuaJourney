@@ -23,23 +23,32 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Sidebar } from "@/components/Sidebar";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { ProgressProvider } from "@/contexts/ProgressContext";
+import { SettingsProvider, useSettings } from "@/contexts/SettingsContext";
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
+  const { palette } = useSettings();
   return (
-    <Stack
-      screenOptions={{
-        headerBackTitle: "Back",
-        contentStyle: { backgroundColor: "#FFF8FA" },
-      }}
-    >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="dua/[id]" options={{ headerShown: false }} />
-    </Stack>
+    <>
+      <Stack
+        screenOptions={{
+          headerBackTitle: "Back",
+          contentStyle: { backgroundColor: palette.background },
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="dua/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
+        <Stack.Screen name="names99" options={{ headerShown: false }} />
+      </Stack>
+      <Sidebar />
+    </>
   );
 }
 
@@ -70,9 +79,13 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView>
             <KeyboardProvider>
-              <ProgressProvider>
-                <RootLayoutNav />
-              </ProgressProvider>
+              <SettingsProvider>
+                <FavoritesProvider>
+                  <ProgressProvider>
+                    <RootLayoutNav />
+                  </ProgressProvider>
+                </FavoritesProvider>
+              </SettingsProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

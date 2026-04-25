@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RememberCheckbox } from "@/components/RememberCheckbox";
 import { DUAS } from "@/constants/duas";
 import { useColors } from "@/hooks/useColors";
+import { useFavorites } from "@/contexts/FavoritesContext";
 import { useProgress } from "@/contexts/ProgressContext";
 
 export default function DuaDetailScreen() {
@@ -30,6 +31,7 @@ export default function DuaDetailScreen() {
     markCompleted,
     unmarkCompleted,
   } = useProgress();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const dua = DUAS.find((d) => d.id === id);
 
@@ -98,7 +100,25 @@ export default function DuaDetailScreen() {
             {dua.category}
           </Text>
         </View>
-        <View style={styles.iconBtnPlaceholder} />
+        <Pressable
+          onPress={() => toggleFavorite(dua.id)}
+          style={({ pressed }) => [
+            styles.iconBtn,
+            {
+              backgroundColor: isFavorite(dua.id)
+                ? colors.pink
+                : colors.card,
+              borderColor: isFavorite(dua.id) ? colors.pink : colors.border,
+              opacity: pressed ? 0.85 : 1,
+            },
+          ]}
+        >
+          <Feather
+            name="heart"
+            size={18}
+            color={colors.navy}
+          />
+        </Pressable>
       </View>
 
       <ScrollView

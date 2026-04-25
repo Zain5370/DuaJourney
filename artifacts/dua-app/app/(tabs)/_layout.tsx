@@ -8,21 +8,27 @@ import React from "react";
 import { Platform, StyleSheet, View, useColorScheme } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { useSettings } from "@/contexts/SettingsContext";
 
 function NativeTabLayout() {
+  const { t } = useSettings();
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "house", selected: "house.fill" }} />
-        <Label>Today</Label>
+        <Label>{t("today_tab")}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="library">
         <Icon sf={{ default: "books.vertical", selected: "books.vertical.fill" }} />
-        <Label>Library</Label>
+        <Label>{t("library_tab")}</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="favorites">
+        <Icon sf={{ default: "heart", selected: "heart.fill" }} />
+        <Label>{t("favorites_tab")}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="progress">
         <Icon sf={{ default: "chart.pie", selected: "chart.pie.fill" }} />
-        <Label>Progress</Label>
+        <Label>{t("progress_tab")}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -30,10 +36,12 @@ function NativeTabLayout() {
 
 function ClassicTabLayout() {
   const colors = useColors();
+  const { resolvedMode, t } = useSettings();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const isDark = resolvedMode === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
+  void colorScheme;
 
   return (
     <Tabs
@@ -73,7 +81,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Today",
+          title: t("today_tab"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="house" tintColor={color} size={24} />
@@ -85,7 +93,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="library"
         options={{
-          title: "Library",
+          title: t("library_tab"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView
@@ -99,9 +107,21 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
+        name="favorites"
+        options={{
+          title: t("favorites_tab"),
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="heart" tintColor={color} size={24} />
+            ) : (
+              <Feather name="heart" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
         name="progress"
         options={{
-          title: "Progress",
+          title: t("progress_tab"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="chart.pie" tintColor={color} size={24} />

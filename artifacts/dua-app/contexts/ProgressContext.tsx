@@ -12,6 +12,7 @@ import { DUAS } from "@/constants/duas";
 
 const STORAGE_KEY = "@dua_app/progress_v1";
 const DAILY_KEY = "@dua_app/daily_v1";
+const STREAK_KEY = "@dua_app/streak_v1";
 
 const DAILY_GOAL = 2;
 
@@ -19,6 +20,12 @@ interface DailyState {
   date: string;
   duaIds: string[];
   completedIds: string[];
+}
+
+interface StreakState {
+  current: number;
+  best: number;
+  lastCompletedDate: string | null;
 }
 
 interface PersistedState {
@@ -33,6 +40,7 @@ interface ProgressContextValue {
   completedToday: string[];
   remainingToday: number;
   dailyGoal: number;
+  streak: StreakState;
   isCompletedToday: (id: string) => boolean;
   isLearned: (id: string) => boolean;
   markCompleted: (id: string) => Promise<void>;
@@ -49,6 +57,12 @@ function getTodayKey(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function diffDays(aIso: string, bIso: string): number {
+  const a = new Date(aIso + "T00:00:00");
+  const b = new Date(bIso + "T00:00:00");
+  return Math.round((a.getTime() - b.getTime()) / 86400000);
+}
+
 function pickTodaysDuas(
   allIds: string[],
   alreadyLearned: Set<string>,
@@ -58,7 +72,6 @@ function pickTodaysDuas(
   const pool = allIds.filter((id) => !alreadyLearned.has(id));
   const source = pool.length >= count ? pool : allIds;
 
-  // Deterministic seeded pick based on date so the same 2 duas show all day.
   let seed = 0;
   for (let i = 0; i < todayKey.length; i++) {
     seed = (seed * 31 + todayKey.charCodeAt(i)) >>> 0;
@@ -78,17 +91,25 @@ function pickTodaysDuas(
   return indices.map((i) => source[i]!);
 }
 
+const DEFAULT_STREAK: StreakState = {
+  current: 0,
+  best: 0,
+  lastCompletedDate: null,
+};
+
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [learnedIds, setLearnedIds] = useState<Set<string>>(new Set());
   const [daily, setDaily] = useState<DailyState | null>(null);
+  const [streak, setStreak] = useState<StreakState>(DEFAULT_STREAK);
 
   useEffect(() => {
     (async () => {
       try {
-        const [progressRaw, dailyRaw] = await Promise.all([
+        const [progressRaw, dailyRaw, streakRaw] = await Promise.all([
           AsyncStorage.getItem(STORAGE_KEY),
           AsyncStorage.getItem(DAILY_KEY),
+          AsyncStorage.getItem(STREAK_KEY),
         ]);
 
         const persistedLearned: string[] = progressRaw
@@ -116,8 +137,24 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
           await AsyncStorage.setItem(DAILY_KEY, JSON.stringify(parsedDaily));
         }
 
+        let parsedStreak: StreakState = streakRaw
+          ? { ...DEFAULT_STREAK, ...(JSON.parse(streakRaw) as StreakState) }
+          : DEFAULT_STREAK;
+
+        if (parsedStreak.lastCompletedDate) {
+          const gap = diffDays(todayKey, parsedStreak.lastCompletedDate);
+          if (gap > 1) {
+            parsedStreak = { ...parsedStreak, current: 0 };
+            await AsyncStorage.setItem(
+              STREAK_KEY,
+              JSON.stringify(parsedStreak),
+            );
+          }
+        }
+
         setLearnedIds(learnedSet);
         setDaily(parsedDaily);
+        setStreak(parsedStreak);
       } finally {
         setReady(true);
       }
@@ -125,7 +162,11 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const persist = useCallback(
-    async (nextLearned: Set<string>, nextDaily: DailyState | null) => {
+    async (
+      nextLearned: Set<string>,
+      nextDaily: DailyState | null,
+      nextStreak: StreakState,
+    ) => {
       await Promise.all([
         AsyncStorage.setItem(
           STORAGE_KEY,
@@ -137,6 +178,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         nextDaily
           ? AsyncStorage.setItem(DAILY_KEY, JSON.stringify(nextDaily))
           : AsyncStorage.removeItem(DAILY_KEY),
+        AsyncStorage.setItem(STREAK_KEY, JSON.stringify(nextStreak)),
       ]);
     },
     [],
@@ -155,11 +197,34 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       const nextLearned = new Set(learnedIds);
       nextLearned.add(id);
 
+      let nextStreak = streak;
+      const todayKey = getTodayKey();
+      if (
+        nextDaily.completedIds.length >= DAILY_GOAL &&
+        streak.lastCompletedDate !== todayKey
+      ) {
+        const gap = streak.lastCompletedDate
+          ? diffDays(todayKey, streak.lastCompletedDate)
+          : null;
+        const newCurrent =
+          gap === 1 ? streak.current + 1 : streak.current === 0 ? 1 : 1;
+        const continued = gap === 1 ? streak.current + 1 : 1;
+        const final = continued;
+        nextStreak = {
+          current: final,
+          best: Math.max(streak.best, final),
+          lastCompletedDate: todayKey,
+        };
+        // newCurrent reserved if needed in future
+        void newCurrent;
+      }
+
       setDaily(nextDaily);
       setLearnedIds(nextLearned);
-      await persist(nextLearned, nextDaily);
+      setStreak(nextStreak);
+      await persist(nextLearned, nextDaily, nextStreak);
     },
-    [daily, learnedIds, persist],
+    [daily, learnedIds, streak, persist],
   );
 
   const unmarkCompleted = useCallback(
@@ -173,19 +238,20 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       nextLearned.delete(id);
       setDaily(nextDaily);
       setLearnedIds(nextLearned);
-      await persist(nextLearned, nextDaily);
+      await persist(nextLearned, nextDaily, streak);
     },
-    [daily, learnedIds, persist],
+    [daily, learnedIds, streak, persist],
   );
 
   const resetProgress = useCallback(async () => {
     setLearnedIds(new Set());
+    setStreak(DEFAULT_STREAK);
     if (daily) {
       const cleared: DailyState = { ...daily, completedIds: [] };
       setDaily(cleared);
-      await persist(new Set(), cleared);
+      await persist(new Set(), cleared, DEFAULT_STREAK);
     } else {
-      await persist(new Set(), null);
+      await persist(new Set(), null, DEFAULT_STREAK);
     }
   }, [daily, persist]);
 
@@ -199,13 +265,22 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       completedToday,
       remainingToday: Math.max(0, DAILY_GOAL - completedToday.length),
       dailyGoal: DAILY_GOAL,
+      streak,
       isCompletedToday: (id: string) => completedToday.includes(id),
       isLearned: (id: string) => learnedIds.has(id),
       markCompleted,
       unmarkCompleted,
       resetProgress,
     };
-  }, [ready, learnedIds, daily, markCompleted, unmarkCompleted, resetProgress]);
+  }, [
+    ready,
+    learnedIds,
+    daily,
+    streak,
+    markCompleted,
+    unmarkCompleted,
+    resetProgress,
+  ]);
 
   return (
     <ProgressContext.Provider value={value}>
