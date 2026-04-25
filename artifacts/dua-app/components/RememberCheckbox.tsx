@@ -31,8 +31,8 @@ export function RememberCheckbox({ checked, onToggle, label }: Props) {
       style={({ pressed }) => [
         styles.wrapper,
         {
-          backgroundColor: "#386845",
-          borderColor: "#386845",
+          backgroundColor: "#4E7F5A",
+          borderColor: "#4E7F5A",
           opacity: pressed ? 0.9 : 1,
           transform: [{ scale: pressed ? 0.98 : 1 }],
         },
