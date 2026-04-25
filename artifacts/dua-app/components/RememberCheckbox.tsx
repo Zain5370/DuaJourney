@@ -78,9 +78,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 16,
     borderRadius: 18,
-    borderWidth: 2,
-    borderBottomWidth: 6,
-    borderRightWidth: 6,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 4,
+    borderBottomWidth: 4,
     gap: 14,
   },
   box: {
