@@ -79,6 +79,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 18,
     borderWidth: 2,
+    borderBottomWidth: 6,
+    borderRightWidth: 6,
     gap: 14,
   },
   box: {
