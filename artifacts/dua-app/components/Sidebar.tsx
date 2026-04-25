@@ -211,7 +211,7 @@ export function Sidebar() {
           <Text
             style={[styles.footer, { color: colors.mutedForeground }]}
           >
-            Dua Learning · {accent}
+            Dua Learning · Zain
           </Text>
         </ScrollView>
       </Animated.View>
