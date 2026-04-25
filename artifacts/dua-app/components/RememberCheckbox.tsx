@@ -31,8 +31,8 @@ export function RememberCheckbox({ checked, onToggle, label }: Props) {
       style={({ pressed }) => [
         styles.wrapper,
         {
-          backgroundColor: "#4E7F5A",
-          borderColor: "#4E7F5A",
+          backgroundColor: checked ? colors.success : colors.card,
+          borderColor: checked ? colors.success : colors.border,
           opacity: pressed ? 0.9 : 1,
           transform: [{ scale: pressed ? 0.98 : 1 }],
         },
@@ -42,14 +42,23 @@ export function RememberCheckbox({ checked, onToggle, label }: Props) {
         style={[
           styles.box,
           {
-            backgroundColor: checked ? "#ffffff" : "transparent",
-            borderColor: "#ffffff",
+            backgroundColor: checked
+              ? colors.successForeground
+              : "transparent",
+            borderColor: checked ? colors.successForeground : colors.navySoft,
           },
         ]}
       >
-        {checked && <Feather name="check" size={16} color="#386845" />}
+        {checked && (
+          <Feather name="check" size={16} color={colors.success} />
+        )}
       </View>
-      <Text style={[styles.label, { color: "#ffffff" }]}>
+      <Text
+        style={[
+          styles.label,
+          { color: checked ? colors.successForeground : colors.navy },
+        ]}
+      >
         {label ?? "I have memorized this Dua"}
       </Text>
     </Pressable>
