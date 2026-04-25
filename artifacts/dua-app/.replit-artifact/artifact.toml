@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "Dua Learning App"
+version = "1.0.0"
+id = "artifacts/dua-app"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 18627
+
+[services.development]
+run = "pnpm --filter @workspace/dua-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dua-app", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/dua-app", "run", "serve" ]
+
+[services.env]
+PORT = "18627"
+BASE_PATH = "/"
