@@ -23,7 +23,9 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { Sidebar } from "@/components/Sidebar";
+import { DuasProvider, useDuas } from "@/contexts/DuasContext";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
 import { ProgressProvider } from "@/contexts/ProgressContext";
 import { SettingsProvider, useSettings } from "@/contexts/SettingsContext";
@@ -34,6 +36,18 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   const { palette } = useSettings();
+  const { ready, error, duas, refresh } = useDuas();
+
+  if (!ready || (error && duas.length === 0)) {
+    return (
+      <LoadingScreen
+        message="Fetching Duas from the library…"
+        error={error && duas.length === 0 ? error : null}
+        onRetry={refresh}
+      />
+    );
+  }
+
   return (
     <>
       <Stack
@@ -80,11 +94,13 @@ export default function RootLayout() {
           <GestureHandlerRootView>
             <KeyboardProvider>
               <SettingsProvider>
-                <FavoritesProvider>
-                  <ProgressProvider>
-                    <RootLayoutNav />
-                  </ProgressProvider>
-                </FavoritesProvider>
+                <DuasProvider>
+                  <FavoritesProvider>
+                    <ProgressProvider>
+                      <RootLayoutNav />
+                    </ProgressProvider>
+                  </FavoritesProvider>
+                </DuasProvider>
               </SettingsProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>

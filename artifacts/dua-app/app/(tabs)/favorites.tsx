@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DuaCard } from "@/components/DuaCard";
 import { MenuButton } from "@/components/Sidebar";
-import { DUAS } from "@/constants/duas";
+import { useDuas } from "@/contexts/DuasContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -24,8 +24,9 @@ export default function FavoritesScreen() {
   const { favorites } = useFavorites();
   const { isLearned } = useProgress();
   const { t } = useSettings();
+  const { duas } = useDuas();
 
-  const items = DUAS.filter((d) => favorites.has(d.id));
+  const items = duas.filter((d) => favorites.has(d.id));
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

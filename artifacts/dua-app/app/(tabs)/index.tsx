@@ -17,21 +17,23 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DuaCard } from "@/components/DuaCard";
 import { ProgressRing } from "@/components/ProgressRing";
 import { MenuButton } from "@/components/Sidebar";
-import { DUAS, type Difficulty } from "@/constants/duas";
+import type { Dua, Length } from "@/constants/duas";
+import { useDuas } from "@/contexts/DuasContext";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useArabicText } from "@/hooks/useArabicText";
 import { useColors } from "@/hooks/useColors";
 
-function pickDuaOfDay(): (typeof DUAS)[number] {
+function pickDuaOfDay(duas: Dua[]): Dua | undefined {
+  if (duas.length === 0) return undefined;
   const d = new Date();
   const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   let seed = 0;
   for (let i = 0; i < key.length; i++) {
     seed = (seed * 31 + key.charCodeAt(i)) >>> 0;
   }
-  return DUAS[seed % DUAS.length]!;
+  return duas[seed % duas.length];
 }
 
 export default function HomeScreen() {
@@ -51,63 +53,67 @@ export default function HomeScreen() {
   } = useProgress();
   const { favorites } = useFavorites();
   const arabic = useArabicText();
+  const { duas } = useDuas();
 
   const [query, setQuery] = useState("");
 
   const todaysDuas = todaysDuaIds
-    .map((id) => DUAS.find((d) => d.id === id))
-    .filter((d): d is (typeof DUAS)[number] => Boolean(d));
+    .map((id) => duas.find((d) => d.id === id))
+    .filter((d): d is Dua => Boolean(d));
 
   const completedCount = completedToday.length;
   const allDoneToday = completedCount >= dailyGoal;
 
-  const totalLearned = DUAS.filter((d) => isLearned(d.id)).length;
+  const totalLearned = duas.filter((d) => isLearned(d.id)).length;
 
-  const duaOfDay = useMemo(() => pickDuaOfDay(), []);
+  const duaOfDay = useMemo(() => pickDuaOfDay(duas), [duas]);
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
-    return DUAS.filter(
-      (d) =>
-        d.title.toLowerCase().includes(q) ||
-        d.english.toLowerCase().includes(q) ||
-        d.transliteration.toLowerCase().includes(q) ||
-        d.source.toLowerCase().includes(q) ||
-        d.category.toLowerCase().includes(q),
-    ).slice(0, 6);
-  }, [query]);
+    return duas
+      .filter(
+        (d) =>
+          d.title.toLowerCase().includes(q) ||
+          d.english.toLowerCase().includes(q) ||
+          d.transliteration.toLowerCase().includes(q) ||
+          d.bookReference.toLowerCase().includes(q) ||
+          d.hadithNumber.toLowerCase().includes(q) ||
+          d.category.toLowerCase().includes(q),
+      )
+      .slice(0, 6);
+  }, [query, duas]);
 
-  const favoriteList = DUAS.filter((d) => favorites.has(d.id)).slice(0, 3);
+  const favoriteList = duas.filter((d) => favorites.has(d.id)).slice(0, 3);
 
-  const difficulties: {
-    key: Difficulty;
+  const lengths: {
+    key: Length;
     label: string;
     desc: string;
     icon: React.ComponentProps<typeof Feather>["name"];
   }[] = [
     {
       key: "Short",
-      label: t("difficulty_short"),
+      label: t("length_short"),
       desc: t("short_desc"),
       icon: "feather",
     },
     {
       key: "Medium",
-      label: t("difficulty_medium"),
+      label: t("length_medium"),
       desc: t("medium_desc"),
       icon: "book-open",
     },
     {
       key: "Long",
-      label: t("difficulty_long"),
+      label: t("length_long"),
       desc: t("long_desc"),
       icon: "layers",
     },
   ];
 
-  const countByDifficulty = (d: Difficulty) =>
-    DUAS.filter((x) => x.difficulty === d).length;
+  const countByLength = (len: Length) =>
+    duas.filter((x) => x.length === len).length;
 
   if (!ready) {
     return (
@@ -229,7 +235,7 @@ export default function HomeScreen() {
             <View style={styles.statsRow}>
               <StatCard
                 icon="book-open"
-                value={String(DUAS.length)}
+                value={String(duas.length)}
                 label={t("duas_in_library")}
               />
               <StatCard
@@ -244,42 +250,46 @@ export default function HomeScreen() {
               />
             </View>
 
-            <Pressable
-              onPress={() => router.push(`/dua/${duaOfDay.id}` as never)}
-              style={({ pressed }) => [
-                { transform: [{ scale: pressed ? 0.99 : 1 }] },
-              ]}
-            >
-              <LinearGradient
-                colors={["#1B2A4E", "#3B4A6F"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.dotdHero}
+            {duaOfDay ? (
+              <Pressable
+                onPress={() => router.push(`/dua/${duaOfDay.id}` as never)}
+                style={({ pressed }) => [
+                  { transform: [{ scale: pressed ? 0.99 : 1 }] },
+                ]}
               >
-                <View style={styles.dotdHeader}>
-                  <View style={styles.dotdBadge}>
-                    <Feather name="sun" size={12} color="#1B2A4E" />
-                    <Text style={styles.dotdBadgeText}>
-                      {t("dua_of_the_day")}
-                    </Text>
-                  </View>
-                  <Feather name="arrow-right" size={18} color="#FFFFFF" />
-                </View>
-                <Text style={styles.dotdTitle}>{duaOfDay.title}</Text>
-                <Text
-                  numberOfLines={2}
-                  style={[
-                    styles.dotdArabic,
-                    arabic.style(22, "medium"),
-                  ]}
+                <LinearGradient
+                  colors={["#1B2A4E", "#3B4A6F"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.dotdHero}
                 >
-                  {duaOfDay.arabic}
-                </Text>
-                <Text style={styles.dotdMeta}>
-                  {duaOfDay.source} · {duaOfDay.difficulty}
-                </Text>
-              </LinearGradient>
-            </Pressable>
+                  <View style={styles.dotdHeader}>
+                    <View style={styles.dotdBadge}>
+                      <Feather name="sun" size={12} color="#1B2A4E" />
+                      <Text style={styles.dotdBadgeText}>
+                        {t("dua_of_the_day")}
+                      </Text>
+                    </View>
+                    <Feather name="arrow-right" size={18} color="#FFFFFF" />
+                  </View>
+                  <Text style={styles.dotdTitle} numberOfLines={2}>
+                    {duaOfDay.title}
+                  </Text>
+                  <Text
+                    numberOfLines={2}
+                    style={[
+                      styles.dotdArabic,
+                      arabic.style(22, "medium"),
+                    ]}
+                  >
+                    {duaOfDay.arabic}
+                  </Text>
+                  <Text style={styles.dotdMeta}>
+                    {duaOfDay.bookReference} · #{duaOfDay.hadithNumber}
+                  </Text>
+                </LinearGradient>
+              </Pressable>
+            ) : null}
 
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: colors.navy }]}>
@@ -356,16 +366,16 @@ export default function HomeScreen() {
 
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: colors.navy }]}>
-                {t("by_difficulty")}
+                {t("by_length")}
               </Text>
             </View>
             <View style={styles.diffRow}>
-              {difficulties.map((d) => (
+              {lengths.map((d) => (
                 <Pressable
                   key={d.key}
                   onPress={() =>
                     router.push(
-                      `/(tabs)/library?difficulty=${d.key}` as never,
+                      `/(tabs)/library?length=${d.key}` as never,
                     )
                   }
                   style={({ pressed }) => [
@@ -394,7 +404,7 @@ export default function HomeScreen() {
                       { color: colors.mutedForeground },
                     ]}
                   >
-                    {countByDifficulty(d.key)} · {d.desc}
+                    {countByLength(d.key)} · {d.desc}
                   </Text>
                 </Pressable>
               ))}

@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 
-import { DUAS } from "@/constants/duas";
+import { useDuas } from "@/contexts/DuasContext";
 
 const STORAGE_KEY = "@dua_app/progress_v1";
 const DAILY_KEY = "@dua_app/daily_v1";
@@ -98,12 +98,15 @@ const DEFAULT_STREAK: StreakState = {
 };
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
+  const { duas, ready: duasReady } = useDuas();
   const [ready, setReady] = useState(false);
   const [learnedIds, setLearnedIds] = useState<Set<string>>(new Set());
   const [daily, setDaily] = useState<DailyState | null>(null);
   const [streak, setStreak] = useState<StreakState>(DEFAULT_STREAK);
 
   useEffect(() => {
+    if (!duasReady || duas.length === 0) return;
+    let cancelled = false;
     (async () => {
       try {
         const [progressRaw, dailyRaw, streakRaw] = await Promise.all([
@@ -118,13 +121,19 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         const learnedSet = new Set<string>(persistedLearned);
 
         const todayKey = getTodayKey();
+        const validIds = new Set(duas.map((d) => d.id));
         let parsedDaily: DailyState | null = dailyRaw
           ? (JSON.parse(dailyRaw) as DailyState)
           : null;
 
-        if (!parsedDaily || parsedDaily.date !== todayKey) {
+        const dailyIsStale =
+          !parsedDaily ||
+          parsedDaily.date !== todayKey ||
+          parsedDaily.duaIds.some((id) => !validIds.has(id));
+
+        if (dailyIsStale) {
           const ids = pickTodaysDuas(
-            DUAS.map((d) => d.id),
+            duas.map((d) => d.id),
             learnedSet,
             DAILY_GOAL,
             todayKey,
@@ -152,14 +161,18 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        if (cancelled) return;
         setLearnedIds(learnedSet);
         setDaily(parsedDaily);
         setStreak(parsedStreak);
       } finally {
-        setReady(true);
+        if (!cancelled) setReady(true);
       }
     })();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [duas, duasReady]);
 
   const persist = useCallback(
     async (

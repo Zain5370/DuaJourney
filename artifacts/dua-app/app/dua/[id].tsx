@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { RememberCheckbox } from "@/components/RememberCheckbox";
-import { DUAS } from "@/constants/duas";
+import { useDuas } from "@/contexts/DuasContext";
 import { useColors } from "@/hooks/useColors";
 import { useArabicText } from "@/hooks/useArabicText";
 import { useFavorites } from "@/contexts/FavoritesContext";
@@ -34,8 +34,9 @@ export default function DuaDetailScreen() {
     unmarkCompleted,
   } = useProgress();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { duas } = useDuas();
 
-  const dua = DUAS.find((d) => d.id === id);
+  const dua = duas.find((d) => d.id === id);
 
   if (!dua) {
     return (
@@ -134,7 +135,7 @@ export default function DuaDetailScreen() {
       >
         <View style={{ gap: 6, paddingHorizontal: 20 }}>
           <Text style={[styles.eyebrow, { color: colors.mutedForeground }]}>
-            {dua.source}  ·  {dua.difficulty}
+            {dua.bookReference}  ·  #{dua.hadithNumber}  ·  {dua.length}
           </Text>
           <Text style={[styles.title, { color: colors.navy }]}>
             {dua.title}
@@ -159,14 +160,18 @@ export default function DuaDetailScreen() {
           </Text>
         </LinearGradient>
 
-        <View style={[styles.block, { paddingHorizontal: 20 }]}>
-          <Text style={[styles.blockLabel, { color: colors.mutedForeground }]}>
-            TRANSLITERATION
-          </Text>
-          <Text style={[styles.transliteration, { color: colors.navy }]}>
-            {dua.transliteration}
-          </Text>
-        </View>
+        {dua.transliteration ? (
+          <View style={[styles.block, { paddingHorizontal: 20 }]}>
+            <Text
+              style={[styles.blockLabel, { color: colors.mutedForeground }]}
+            >
+              TRANSLITERATION
+            </Text>
+            <Text style={[styles.transliteration, { color: colors.navy }]}>
+              {dua.transliteration}
+            </Text>
+          </View>
+        ) : null}
 
         <View
           style={[

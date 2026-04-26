@@ -164,8 +164,11 @@ function FeatureContent({
       </Text>
 
       <View style={styles.featureFooter}>
-        <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
-          {dua.source}
+        <Text
+          style={[styles.metaText, { color: colors.mutedForeground }]}
+          numberOfLines={1}
+        >
+          {dua.bookReference} · #{dua.hadithNumber}
         </Text>
         <View style={styles.cta}>
           <Text style={[styles.ctaText, { color: colors.navy }]}>
@@ -216,14 +219,17 @@ function CompactContent({
             {dua.arabic}
           </Text>
           <View style={styles.compactMeta}>
-            <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
-              {dua.source}
+            <Text
+              style={[styles.metaText, { color: colors.mutedForeground }]}
+              numberOfLines={1}
+            >
+              {dua.bookReference} · #{dua.hadithNumber}
             </Text>
             <View
               style={[styles.dot, { backgroundColor: colors.mutedForeground }]}
             />
             <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
-              {dua.difficulty}
+              {dua.length}
             </Text>
           </View>
         </View>

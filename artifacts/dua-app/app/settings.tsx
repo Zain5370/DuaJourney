@@ -191,24 +191,42 @@ export default function SettingsScreen() {
 
         <Section title={t("font_style")}>
           <View style={styles.list}>
-            {(["poppins", "system", "serif"] as FontStyle[]).map((style) => {
-              const selected = fontStyle === style;
-              const label =
-                style === "poppins"
-                  ? "Poppins (default)"
-                  : style === "system"
-                    ? "System"
-                    : "Serif";
-              const sample =
-                style === "poppins"
-                  ? "Poppins_400Regular"
-                  : style === "system"
-                    ? "System"
-                    : "Georgia";
+            {(
+              [
+                {
+                  value: "poppins",
+                  label: "Naskh",
+                  arabic: "نَسْخ",
+                  desc: "Clear, modern Quranic script (default)",
+                  arabicFamily: "NotoNaskhArabic_500Medium",
+                },
+                {
+                  value: "system",
+                  label: "Kufi",
+                  arabic: "كُوفِي",
+                  desc: "Bold, geometric system script",
+                  arabicFamily: "System",
+                },
+                {
+                  value: "serif",
+                  label: "Nastaliq",
+                  arabic: "نَسْتَعْلِيق",
+                  desc: "Flowing, calligraphic Persian–Urdu style",
+                  arabicFamily: "NotoNastaliqUrdu_400Regular",
+                },
+              ] as Array<{
+                value: FontStyle;
+                label: string;
+                arabic: string;
+                desc: string;
+                arabicFamily: string;
+              }>
+            ).map((opt) => {
+              const selected = fontStyle === opt.value;
               return (
                 <Pressable
-                  key={style}
-                  onPress={() => setFontStyle(style)}
+                  key={opt.value}
+                  onPress={() => setFontStyle(opt.value)}
                   style={[
                     styles.row,
                     {
@@ -218,16 +236,29 @@ export default function SettingsScreen() {
                   ]}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.rowTitle, { color: colors.navy }]}>
-                      {label}
-                    </Text>
+                    <View style={styles.fontTitleRow}>
+                      <Text style={[styles.rowTitle, { color: colors.navy }]}>
+                        {opt.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.fontArabicSample,
+                          {
+                            color: colors.navy,
+                            fontFamily: opt.arabicFamily,
+                          },
+                        ]}
+                      >
+                        {opt.arabic}
+                      </Text>
+                    </View>
                     <Text
                       style={[
                         styles.rowSub,
-                        { color: colors.mutedForeground, fontFamily: sample },
+                        { color: colors.mutedForeground },
                       ]}
                     >
-                      The quick brown fox.
+                      {opt.desc}
                     </Text>
                   </View>
                   {selected && (
@@ -431,5 +462,16 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins_400Regular",
     fontSize: 12,
     marginTop: 2,
+  },
+  fontTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  fontArabicSample: {
+    fontSize: 18,
+    writingDirection: "rtl",
+    textAlign: "right",
   },
 });

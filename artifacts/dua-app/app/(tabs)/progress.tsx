@@ -14,7 +14,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DuaCard } from "@/components/DuaCard";
 import { ProgressRing } from "@/components/ProgressRing";
 import { MenuButton } from "@/components/Sidebar";
-import { CATEGORIES, DUAS } from "@/constants/duas";
+import { CATEGORIES } from "@/constants/duas";
+import { useDuas } from "@/contexts/DuasContext";
 import { useColors } from "@/hooks/useColors";
 import { useProgress } from "@/contexts/ProgressContext";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -25,13 +26,14 @@ export default function ProgressScreen() {
   const isWeb = Platform.OS === "web";
   const { learnedIds, resetProgress, streak } = useProgress();
   const { t } = useSettings();
+  const { duas } = useDuas();
 
-  const total = DUAS.length;
-  const learned = DUAS.filter((d) => learnedIds.has(d.id));
+  const total = duas.length;
+  const learned = duas.filter((d) => learnedIds.has(d.id));
   const remaining = total - learned.length;
 
   const byCategory = CATEGORIES.map((cat) => {
-    const inCat = DUAS.filter((d) => d.category === cat);
+    const inCat = duas.filter((d) => d.category === cat);
     const learnedInCat = inCat.filter((d) => learnedIds.has(d.id)).length;
     return { category: cat, learned: learnedInCat, total: inCat.length };
   }).filter((c) => c.total > 0);

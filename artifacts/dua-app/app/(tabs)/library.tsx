@@ -15,11 +15,11 @@ import { FilterPills } from "@/components/FilterPills";
 import { MenuButton } from "@/components/Sidebar";
 import {
   CATEGORIES,
-  DIFFICULTIES,
-  DUAS,
+  LENGTHS,
   type Category,
-  type Difficulty,
+  type Length,
 } from "@/constants/duas";
+import { useDuas } from "@/contexts/DuasContext";
 import { useColors } from "@/hooks/useColors";
 import { useProgress } from "@/contexts/ProgressContext";
 
@@ -28,25 +28,27 @@ export default function LibraryScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
   const { isLearned } = useProgress();
+  const { duas } = useDuas();
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category | "All">("All");
-  const [difficulty, setDifficulty] = useState<Difficulty | "All">("All");
+  const [length, setLength] = useState<Length | "All">("All");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return DUAS.filter((d) => {
+    return duas.filter((d) => {
       if (category !== "All" && d.category !== category) return false;
-      if (difficulty !== "All" && d.difficulty !== difficulty) return false;
+      if (length !== "All" && d.length !== length) return false;
       if (!q) return true;
       return (
         d.title.toLowerCase().includes(q) ||
         d.english.toLowerCase().includes(q) ||
         d.transliteration.toLowerCase().includes(q) ||
-        d.source.toLowerCase().includes(q)
+        d.bookReference.toLowerCase().includes(q) ||
+        d.hadithNumber.toLowerCase().includes(q)
       );
     });
-  }, [query, category, difficulty]);
+  }, [query, category, length, duas]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -102,12 +104,12 @@ export default function LibraryScreen() {
 
         <View style={{ gap: 10 }}>
           <Text style={[styles.filterLabel, { color: colors.mutedForeground }]}>
-            DIFFICULTY
+            LENGTH
           </Text>
           <FilterPills
-            options={DIFFICULTIES}
-            selected={difficulty}
-            onSelect={setDifficulty}
+            options={LENGTHS}
+            selected={length}
+            onSelect={setLength}
           />
         </View>
 

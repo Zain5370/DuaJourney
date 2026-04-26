@@ -31,23 +31,37 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 Expo (React Native + web) Islamic Dua memorization app.
 
 ### Features
-- **Home (Today)**: greeting, search, daily goal ring, stats row, Dua of the Day, today's two Duas (sequential unlock), browse by difficulty, favorites preview.
-- **Library**: full Dua list with category + difficulty filters, search.
+- **Home (Today)**: greeting, search, daily goal ring, stats row, Dua of the Day, today's two Duas (sequential unlock), browse by length, favorites preview.
+- **Library**: full Dua list with category + length filters, search.
 - **Favorites**: list of hearted Duas.
 - **Progress**: streak (current/best), overall ring, by-category bars, memorized list, reset.
-- **Sidebar drawer** (slide-in): Light Mode (big) / Dark Mode (small) toggle buttons, nav links to 99 Names of Allah, Settings.
+- **Sidebar drawer** (slide-in): Light Mode / Dark Mode toggle, nav links to 99 Names of Allah, Settings.
 - **99 Names of Allah** screen: hero verse + grid of 99 names (Arabic / transliteration / meaning).
-- **Settings**: theme (light / dark / system), accent color (5 options), language (English / Arabic / Urdu / Hindi / Bangla / French), font size (S/M/L/XL), font style (Poppins / System / Serif).
+- **Settings**: theme (light / dark / system), accent color (5 options), language (English / Arabic / Urdu / Hindi / Bangla / French), font size (S/M/L/XL), font style (Naskh / Kufi / Nastaliq — Arabic script names).
+- **Loading screen**: animated app icon with pulse animation while Duas are fetched, with retry on error.
+
+### Data source
+- Duas are fetched from `hadithapi.com` (Sahih Bukhari, chapters 80 & 81 — Invocations).
+- API key is embedded in `services/hadithApi.ts` (user-supplied; client bundle).
+- Each Dua exposes `bookReference` (e.g. "Sahih Bukhari") and `hadithNumber` (e.g. "6305") in addition to title, Arabic, English, Urdu, category, and length.
+- `length` is `Short | Medium | Long`, derived from Arabic character count (replaces the old `difficulty` field).
+- Category is keyword-derived from the heading + English text.
+- Results are cached in AsyncStorage (`@dua_app/duas_cache_v1`, 7-day TTL) and refreshed in the background on launch.
 
 ### State (AsyncStorage)
 - `@dua_app/settings_v1` — SettingsContext
 - `@dua_app/favorites_v1` — FavoritesContext
 - `@dua_app/progress_v1` — completed today / learned set
 - `@dua_app/streak_v1` — daily streak
+- `@dua_app/duas_cache_v1` — fetched duas + timestamp
 
 ### Key files
+- `services/hadithApi.ts` — hadithapi.com client + transformer
+- `contexts/DuasContext.tsx` — provider that loads/caches duas, exposes `useDuas()`
+- `components/LoadingScreen.tsx` — full-screen icon + spinner with retry
 - `contexts/SettingsContext.tsx`, `contexts/FavoritesContext.tsx`, `contexts/ProgressContext.tsx`
-- `constants/translations.ts` (6-language dict), `constants/names99.ts`, `constants/colors.ts` (light/dark + 5 accents)
-- `components/Sidebar.tsx` (Sidebar + MenuButton), `components/DuaCard.tsx` (with favorite heart toggle)
+- `constants/duas.ts` (types + categories + lengths only — no static data)
+- `constants/translations.ts` (6-language dict), `constants/names99.ts`, `constants/colors.ts`
+- `components/Sidebar.tsx`, `components/DuaCard.tsx` (shows `bookRef · #hadithNumber`)
 - `app/(tabs)/index.tsx`, `library.tsx`, `favorites.tsx`, `progress.tsx`
-- `app/settings.tsx`, `app/names99.tsx`, `app/dua/[id].tsx`
+- `app/settings.tsx`, `app/names99.tsx`, `app/dua/[id].tsx`, `app/_layout.tsx` (provider tree)
