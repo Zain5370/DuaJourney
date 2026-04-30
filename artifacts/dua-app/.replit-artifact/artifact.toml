@@ -1,13 +1,8 @@
-kind = "mobile"
+kind = "web"
 previewPath = "/"
 title = "Dua Learning App"
 version = "1.0.0"
 id = "artifacts/dua-app"
-router = "expo-domain"
-
-[[integratedSkills]]
-name = "expo"
-version = "1.0.0"
 
 [[services]]
 ensurePreviewReachable = "/status"
