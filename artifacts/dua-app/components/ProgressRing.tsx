@@ -10,6 +10,10 @@ interface Props {
   completed: number;
   total: number;
   label?: string;
+  trackColor?: string;
+  fillColor?: string;
+  valueColor?: string;
+  subColor?: string;
 }
 
 export function ProgressRing({
@@ -18,6 +22,10 @@ export function ProgressRing({
   completed,
   total,
   label,
+  trackColor,
+  fillColor,
+  valueColor,
+  subColor,
 }: Props) {
   const colors = useColors();
   const radius = (size - stroke) / 2;
@@ -32,7 +40,7 @@ export function ProgressRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={colors.muted}
+          stroke={trackColor ?? colors.muted}
           strokeWidth={stroke}
           fill="transparent"
         />
@@ -40,7 +48,7 @@ export function ProgressRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={colors.pink}
+          stroke={fillColor ?? colors.pink}
           strokeWidth={stroke}
           fill="transparent"
           strokeDasharray={`${circumference} ${circumference}`}
@@ -50,14 +58,16 @@ export function ProgressRing({
         />
       </Svg>
       <View style={styles.center}>
-        <Text style={[styles.value, { color: colors.navy }]}>
+        <Text style={[styles.value, { color: valueColor ?? colors.navy }]}>
           {completed}
-          <Text style={[styles.divider, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.divider, { color: subColor ?? colors.mutedForeground }]}
+          >
             /{total}
           </Text>
         </Text>
         {label && (
-          <Text style={[styles.label, { color: colors.mutedForeground }]}>
+          <Text style={[styles.label, { color: subColor ?? colors.mutedForeground }]}>
             {label}
           </Text>
         )}

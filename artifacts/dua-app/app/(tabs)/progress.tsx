@@ -110,7 +110,7 @@ export default function ProgressScreen() {
         </View>
 
         <LinearGradient
-          colors={[colors.navy, colors.navySoft]}
+          colors={["#1B2A4E", "#3B4A6F"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.hero}
@@ -133,6 +133,10 @@ export default function ProgressScreen() {
             completed={learned.length}
             total={total}
             label="OVERALL"
+            trackColor="rgba(255,255,255,0.18)"
+            fillColor="#F8C1CC"
+            valueColor="#FFFFFF"
+            subColor="#FCE7EE"
           />
         </LinearGradient>
 
