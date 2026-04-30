@@ -41,8 +41,10 @@ Expo (React Native + web) Islamic Dua memorization app.
 - **Loading screen**: animated app icon with pulse animation while Duas are fetched, with retry on error.
 
 ### Data source
-- Duas are fetched from `hadithapi.com` (Sahih Bukhari, chapters 80 & 81 — Invocations).
-- API key is embedded in `services/hadithApi.ts` (user-supplied; client bundle).
+- **Offline first**: 74 Duas are bundled at build time in `constants/bundledDuas.ts` (auto-generated). The app shows them instantly with no network or spinner.
+- On launch, the cached payload (if newer than the bundle) is loaded from AsyncStorage, and a background refresh from `hadithapi.com` (Sahih Bukhari, chapters 80 & 81 — Invocations) is attempted. Network failures are silently ignored — bundled / cached duas remain in place.
+- Regenerate the bundle with `node scripts/generate-duas.mjs` (re-runs the same fetch + transform pipeline against the API).
+- API key is embedded in `services/hadithApi.ts` and `scripts/generate-duas.mjs` (user-supplied; client bundle).
 - Each Dua exposes `bookReference` (e.g. "Sahih Bukhari") and `hadithNumber` (e.g. "6305") in addition to title, Arabic, English, Urdu, category, and length.
 - `length` is `Short | Medium | Long`, derived from Arabic character count (replaces the old `difficulty` field).
 - Category is keyword-derived from the heading + English text.

@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 
+import { BUNDLED_DUAS } from "@/constants/bundledDuas";
 import type { Dua } from "@/constants/duas";
 import { fetchDuasFromApi } from "@/services/hadithApi";
 
@@ -30,9 +31,11 @@ interface DuasContextValue {
 const DuasContext = createContext<DuasContextValue | undefined>(undefined);
 
 export function DuasProvider({ children }: { children: React.ReactNode }) {
-  const [duas, setDuas] = useState<Dua[]>([]);
-  const [ready, setReady] = useState(false);
-  const [loading, setLoading] = useState(true);
+  // Start with bundled offline data so the app is usable instantly,
+  // even with no network access.
+  const [duas, setDuas] = useState<Dua[]>(BUNDLED_DUAS);
+  const [ready, setReady] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadFromCache = useCallback(async (): Promise<Dua[] | null> => {
@@ -43,6 +46,7 @@ export function DuasProvider({ children }: { children: React.ReactNode }) {
       if (
         !parsed ||
         !Array.isArray(parsed.duas) ||
+        parsed.duas.length === 0 ||
         Date.now() - parsed.ts > CACHE_TTL_MS
       ) {
         return null;
@@ -86,35 +90,29 @@ export function DuasProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // 1. Prefer the cached payload from a previous successful fetch
+      //    (it may include newer duas than the bundle).
       const cached = await loadFromCache();
       if (cached && !cancelled) {
         setDuas(cached);
-        setReady(true);
-        setLoading(false);
-        try {
-          await fetchAndStore();
-        } catch {
-          // keep cached duas if refresh fails
-        }
-        return;
       }
+
+      // 2. Try to refresh in the background. If the network fails the
+      //    app keeps running on the cached or bundled offline copy.
       try {
-        await fetchAndStore();
-      } catch (e) {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Failed to load Duas.");
+        const fresh = await fetchDuasFromApi();
+        if (!cancelled && fresh.length > 0) {
+          setDuas(fresh);
+          await writeCache(fresh);
         }
-      } finally {
-        if (!cancelled) {
-          setReady(true);
-          setLoading(false);
-        }
+      } catch {
+        // offline / API down — bundled or cached duas remain in place
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [loadFromCache, fetchAndStore]);
+  }, [loadFromCache, writeCache]);
 
   const value = useMemo<DuasContextValue>(
     () => ({ ready, loading, error, duas, refresh }),
