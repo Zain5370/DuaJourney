@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
   Animated,
-  Dimensions,
   Platform,
   Pressable,
   ScrollView,
@@ -274,15 +273,12 @@ export function MenuButton() {
   );
 }
 
-const SCREEN_HEIGHT = Dimensions.get("window").height;
-
 const styles = StyleSheet.create({
   drawer: {
     position: "absolute",
     top: 0,
     bottom: 0,
     left: 0,
-    height: SCREEN_HEIGHT,
     borderRightWidth: 1,
     shadowColor: "#000",
     shadowOpacity: 0.18,
@@ -294,7 +290,7 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingBottom: 32,
     paddingHorizontal: 16,
-    minHeight: SCREEN_HEIGHT,
+    flexGrow: 1,
   },
   headerRow: {
     flexDirection: "row",
